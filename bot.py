@@ -30,12 +30,12 @@ def post_to_slack(message):
         print(f"❌ Slack error: {e.response['error']}")
 
 # Skip if not a demo week
-week_number = datetime.date.today().isocalendar().week
-if week_number % 2 != 0:
-    msg = f"🛑 Week {week_number} is not a demo week — skipping Jira summary."
-    print(msg)
-    post_to_slack(msg)
-    sys.exit(0)
+#week_number = datetime.date.today().isocalendar().week
+#if week_number % 2 != 0:
+#    msg = f"🛑 Week {week_number} is not a demo week — skipping Jira summary."
+#    print(msg)
+#    post_to_slack(msg)
+#    sys.exit(0)
 
 # Get all boards
 print("📋 Fetching Jira boards...")
