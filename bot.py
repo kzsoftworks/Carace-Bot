@@ -43,6 +43,9 @@ boards = []
 start_at = 0
 while True:
     res = requests.get(f"{jira_api_base}/board?startAt={start_at}", headers=headers)
+    print(f"Request URL: {res.url}")
+    print(f"Response status code: {res.status_code}")
+    print(f"Response text: {res.text[:500]}")
     data = res.json()
     boards.extend(data.get("values", []))
     if data.get("isLast", True):
@@ -59,6 +62,9 @@ for board in boards:
 
     # Get active sprints
     res = requests.get(f"{jira_api_base}/board/{board_id}/sprint?state=active", headers=headers)
+    print(f"Request URL: {res.url}")
+    print(f"Response status code: {res.status_code}")
+    print(f"Response text: {res.text[:500]}")
     sprints = res.json().get("values", [])
 
     if not sprints:
@@ -77,6 +83,9 @@ for board in boards:
             f"{jira_api_base}/sprint/{sprint_id}/issue?startAt={start_at}",
             headers=headers
         )
+        print(f"Request URL: {res.url}")
+        print(f"Response status code: {res.status_code}")
+        print(f"Response text: {res.text[:500]}")
         issues_data = res.json()
         issues = issues_data.get("issues", [])
 
