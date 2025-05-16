@@ -4,6 +4,8 @@ import datetime
 import requests
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+from dotenv import load_dotenv
+load_dotenv()
 
 # Env variables
 JIRA_API_TOKEN = os.getenv("JIRA_API_TOKEN")
@@ -87,18 +89,19 @@ for board_id in BOARD_IDS:
             print(f"Response Assignee: {assignee_name}")
             print(f"Response issuetype: {issuetype}")
             print(f"Response status: {status.lower()}")
-            if status.lower() == "code review" or status.lower() == "code-test":
 
-            if issuetype == "Story" and (status.lower() == "dev-complete" or status.lower() == "test-pending" or status.lower() == "done"):
-                if assignee_name not in completed_stories_by_user:
-                    completed_stories_by_user[assignee_name] = []
-                completed_stories_by_user[assignee_name].append(issue["key"])
-
-            if issuetype == "Story" and (status.lower() == "code review" or status.lower() == "code-test"):
+            if issuetype == "Story":
+                status_lower = status.lower()
                 
-                if assignee_name not in crct_stories_by_user:
-                    crct_stories_by_user[assignee_name] = []
-                crct_stories_by_user[assignee_name].append(issue["key"])
+                if status_lower in ["dev-complete", "test-pending", "done"]:
+                    if assignee_name not in completed_stories_by_user:
+                        completed_stories_by_user[assignee_name] = []
+                    completed_stories_by_user[assignee_name].append(issue["key"])
+                
+                elif status_lower in ["code review", "code-test"]:
+                    if assignee_name not in crct_stories_by_user:
+                        crct_stories_by_user[assignee_name] = []
+                    crct_stories_by_user[assignee_name].append(issue["key"])
 
         if total-start_at <+ 0:
             break
