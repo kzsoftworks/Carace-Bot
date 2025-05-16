@@ -4,8 +4,6 @@ import datetime
 import requests
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
-from dotenv import load_dotenv
-load_dotenv()
 
 # Env variables
 JIRA_API_TOKEN = os.getenv("JIRA_API_TOKEN")
