@@ -34,12 +34,11 @@ def post_to_slack(message):
         print(f"❌ Slack error: {e.response['error']}")
 
 # Skip if not a demo week
-#week_number = datetime.date.today().isocalendar().week
-#if week_number % 2 != 0:
-#    msg = f"🛑 Week {week_number} is not a demo week — skipping Jira summary."
-#    print(msg)
-#    post_to_slack(msg)
-#    sys.exit(0)
+week_number = datetime.date.today().isocalendar().week
+if (week_number+1) % 2 != 0:
+    msg = f"🛑 Week {week_number} is not a demo week — skipping Jira summary."
+    print(msg)
+    sys.exit(0)
 
 completed_stories_by_user = {}
 crct_stories_by_user = {}
@@ -106,19 +105,19 @@ for board_id in BOARD_IDS:
         start_at += 50
         print(f"Response issues_data: {start_at}")
 
-if not completed_stories_by_user:
+if not completed_stories_by_user and not crct_stories_by_user:
     msg = "📦 No completed *Story* issues found in any active sprint this demo week."
     print(msg)
     post_to_slack(msg)
     sys.exit(0)
 
 print(f"📊 *Sprint Summary")
-summary = " Completed Stories*\n\n"
-for user, issues in completed_stories_by_user.items():
+summary = "📊 Completed Stories*\n\n"
+for user, issues in sorted(completed_stories_by_user.items(), key=lambda x: x[1][0]):
     summary += f"• *{user}*: {', '.join(issues)}\n"
 
 summary2 = "📊 *CR/CT Stories*\n\n"
-for user, issues in crct_stories_by_user.items():
+for user, issues in sorted(crct_stories_by_user.items(), key=lambda x: x[1][0]):
     summary2 += f"• *{user}*: {', '.join(issues)}\n"
 
 print(summary)
