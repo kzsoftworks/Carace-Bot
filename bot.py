@@ -114,11 +114,12 @@ if not completed_stories_by_user and not crct_stories_by_user:
 print(f"📊 *Sprint Summary")
 summary = "📊 Completed Stories*\n\n"
 for user, issues in sorted(completed_stories_by_user.items(), key=lambda x: x[1][0]):
-    summary += f"• *{user}*: {', '.join(issues)}\n"
+    summary += f"• *{user}*: {', '.join([f'<https://{JIRA_DOMAIN}/browse/{key}|{key}>' for key in issues])}\n"
 
 summary2 = "📊 *CR/CT Stories*\n\n"
 for user, issues in sorted(crct_stories_by_user.items(), key=lambda x: x[1][0]):
-    summary2 += f"• *{user}*: {', '.join(issues)}\n"
+    summary2 += f"• *{user}*: {', '.join([f'<https://{JIRA_DOMAIN}/browse/{key}|{key}>' for key in issues])}\n"
+
 
 print(summary)
 print(summary2)
