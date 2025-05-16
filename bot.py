@@ -12,6 +12,9 @@ JIRA_DOMAIN = os.getenv("JIRA_DOMAIN")
 SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 SLACK_CHANNEL_ID = os.getenv("SLACK_CHANNEL_ID")
 
+# Predefined list of Jira board IDs
+BOARD_IDS = [106, 93]  # 🔁 Replace these with actual board IDs
+
 # Set up Jira API session
 headers = {
     "Authorization": f"Basic {requests.auth._basic_auth_str(JIRA_EMAIL, JIRA_API_TOKEN)}",
@@ -29,36 +32,18 @@ def post_to_slack(message):
     except SlackApiError as e:
         print(f"❌ Slack error: {e.response['error']}")
 
-# Skip if not a demo week
-#week_number = datetime.date.today().isocalendar().week
-#if week_number % 2 != 0:
-#    msg = f"🛑 Week {week_number} is not a demo week — skipping Jira summary."
-#    print(msg)
-#    post_to_slack(msg)
-#    sys.exit(0)
-
-# Get all boards
-print("📋 Fetching Jira boards...")
-boards = []
-start_at = 0
-while True:
-    res = requests.get(f"{jira_api_base}/board?startAt={start_at}", headers=headers)
-    print(f"Request URL: {res.url}")
-    print(f"Response status code: {res.status_code}")
-    print(f"Response text: {res.text[:500]}")
-    data = res.json()
-    boards.extend(data.get("values", []))
-    if data.get("isLast", True):
-        break
-    start_at += data.get("maxResults", 50)
-
-print(f"✅ Found {len(boards)} boards.")
+# Optional: Skip if not a demo week
+# week_number = datetime.date.today().isocalendar().week
+# if week_number % 2 != 0:
+#     msg = f"🛑 Week {week_number} is not a demo week — skipping Jira summary."
+#     print(msg)
+#     post_to_slack(msg)
+#     sys.exit(0)
 
 completed_stories_by_user = {}
 
-for board in boards:
-    board_id = board["id"]
-    board_name = board["name"]
+for board_id in BOARD_IDS:
+    board_name = f"Board {board_id}"  # Optional: Map to meaningful names if desired
 
     # Get active sprints
     res = requests.get(f"{jira_api_base}/board/{board_id}/sprint?state=active", headers=headers)
