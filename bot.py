@@ -12,6 +12,10 @@ JIRA_DOMAIN = os.getenv("JIRA_DOMAIN")
 SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 SLACK_CHANNEL_ID = os.getenv("SLACK_CHANNEL_ID")
 
+print(f"JIRA_DOMAIN: {JIRA_DOMAIN}")
+print(f"JIRA_EMAIL: {JIRA_EMAIL}")
+print(f"JIRA_API_TOKEN: {'✅ Set' if JIRA_API_TOKEN else '❌ Missing'}")
+
 # Predefined list of Jira board IDs
 BOARD_IDS = [106, 93]  # 🔁 Replace these with actual board IDs
 
