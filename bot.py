@@ -12,16 +12,13 @@ JIRA_DOMAIN = os.getenv("JIRA_DOMAIN")
 SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 SLACK_CHANNEL_ID = os.getenv("SLACK_CHANNEL_ID")
 
-print(f"JIRA_DOMAIN: {JIRA_DOMAIN}")
-print(f"JIRA_EMAIL: {JIRA_EMAIL}")
-print(f"JIRA_API_TOKEN: {'✅ Set' if JIRA_API_TOKEN else '❌ Missing'}")
-
-# Predefined list of Jira board IDs
-BOARD_IDS = [106, 93]  # 🔁 Replace these with actual board IDs
+# Set up Jira API session
+BOARD_IDS = [106]  # Replace with your actual board IDs
 
 # Set up Jira API session
 headers = {
-    "Authorization": f"Basic {requests.auth._basic_auth_str(JIRA_EMAIL, JIRA_API_TOKEN)}",
+    # Corrected: no extra "Basic " prefix here, requests.auth._basic_auth_str returns full header string
+    "Authorization": requests.auth._basic_auth_str(JIRA_EMAIL, JIRA_API_TOKEN),
     "Accept": "application/json"
 }
 jira_api_base = f"https://{JIRA_DOMAIN}/rest/agile/1.0"
@@ -36,18 +33,19 @@ def post_to_slack(message):
     except SlackApiError as e:
         print(f"❌ Slack error: {e.response['error']}")
 
-# Optional: Skip if not a demo week
-# week_number = datetime.date.today().isocalendar().week
-# if week_number % 2 != 0:
-#     msg = f"🛑 Week {week_number} is not a demo week — skipping Jira summary."
-#     print(msg)
-#     post_to_slack(msg)
-#     sys.exit(0)
+# Skip if not a demo week
+#week_number = datetime.date.today().isocalendar().week
+#if week_number % 2 != 0:
+#    msg = f"🛑 Week {week_number} is not a demo week — skipping Jira summary."
+#    print(msg)
+#    post_to_slack(msg)
+#    sys.exit(0)
 
 completed_stories_by_user = {}
+crct_stories_by_user = {}
 
 for board_id in BOARD_IDS:
-    board_name = f"Board {board_id}"  # Optional: Map to meaningful names if desired
+    board_name = f"Board {board_id}"
 
     # Get active sprints
     res = requests.get(f"{jira_api_base}/board/{board_id}/sprint?state=active", headers=headers)
@@ -55,7 +53,7 @@ for board_id in BOARD_IDS:
     print(f"Response status code: {res.status_code}")
     print(f"Response text: {res.text[:500]}")
     sprints = res.json().get("values", [])
-
+    
     if not sprints:
         msg = f"📭 No active sprint found for board: *{board_name}*"
         print(msg)
@@ -64,7 +62,7 @@ for board_id in BOARD_IDS:
 
     active_sprint = sprints[0]
     sprint_id = active_sprint["id"]
-
+    print(f"Response sprints: {sprint_id}")
     # Get issues in the active sprint
     start_at = 0
     while True:
@@ -77,34 +75,52 @@ for board_id in BOARD_IDS:
         print(f"Response text: {res.text[:500]}")
         issues_data = res.json()
         issues = issues_data.get("issues", [])
-
+        total = issues_data.get("total", 0)
+        
         for issue in issues:
             fields = issue.get("fields", {})
             issuetype = fields.get("issuetype", {}).get("name", "")
             status = fields.get("status", {}).get("name", "")
-            assignee = fields.get("assignee", {})
-            assignee_name = assignee.get("displayName", "Unassigned")
+            assignee = fields.get("assignee")
+            assignee_name = assignee.get("displayName", "Unassigned") if assignee else "Unassigned"
 
-            if issuetype == "Story" and status.lower() == "complete":
+            print(f"Response Assignee: {assignee_name}")
+            print(f"Response issuetype: {issuetype}")
+            print(f"Response status: {status.lower()}")
+            if status.lower() == "code review" or status.lower() == "code-test":
+
+            if issuetype == "Story" and (status.lower() == "dev-complete" or status.lower() == "test-pending" or status.lower() == "done"):
                 if assignee_name not in completed_stories_by_user:
                     completed_stories_by_user[assignee_name] = []
                 completed_stories_by_user[assignee_name].append(issue["key"])
 
-        if issues_data.get("isLast", True):
-            break
-        start_at += issues_data.get("maxResults", 50)
+            if issuetype == "Story" and (status.lower() == "code review" or status.lower() == "code-test"):
+                
+                if assignee_name not in crct_stories_by_user:
+                    crct_stories_by_user[assignee_name] = []
+                crct_stories_by_user[assignee_name].append(issue["key"])
 
-# Handle case: no completed stories found
+        if total-start_at <+ 0:
+            break
+        start_at += 50
+        print(f"Response issues_data: {start_at}")
+
 if not completed_stories_by_user:
     msg = "📦 No completed *Story* issues found in any active sprint this demo week."
     print(msg)
     post_to_slack(msg)
     sys.exit(0)
 
-# Build summary
-summary = "📊 *Biweekly Jira Summary – Completed Stories*\n\n"
+print(f"📊 *Sprint Summary")
+summary = " Completed Stories*\n\n"
 for user, issues in completed_stories_by_user.items():
     summary += f"• *{user}*: {', '.join(issues)}\n"
 
+summary2 = "📊 *CR/CT Stories*\n\n"
+for user, issues in crct_stories_by_user.items():
+    summary2 += f"• *{user}*: {', '.join(issues)}\n"
+
 print(summary)
+print(summary2)
 post_to_slack(summary)
+post_to_slack(summary2)
