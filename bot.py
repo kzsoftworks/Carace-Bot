@@ -123,5 +123,5 @@ for user, issues in sorted(crct_stories_by_user.items(), key=lambda x: x[1][0]):
 
 print(summary)
 print(summary2)
-#post_to_slack(summary)
-#post_to_slack(summary2)
+post_to_slack(summary)
+post_to_slack(summary2)
