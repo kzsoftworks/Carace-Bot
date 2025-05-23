@@ -90,7 +90,7 @@ for board_id in BOARD_IDS:
             if issuetype == "Story":
                 status_lower = status.lower()
                 
-                if status_lower in ["dev-complete", "test-pending", "done"]:
+                if status_lower in ["dev-complete", "test-pending", "test-blocked", "done", "deployed"]:
                     if assignee_name not in completed_stories_by_user:
                         completed_stories_by_user[assignee_name] = []
                     completed_stories_by_user[assignee_name].append(issue["key"])
@@ -112,7 +112,7 @@ if not completed_stories_by_user and not crct_stories_by_user:
     sys.exit(0)
 
 print(f"📊 *Sprint Summary")
-summary = "📊 Completed Stories*\n\n"
+summary = "📊 *Completed Stories*\n\n"
 for user, issues in sorted(completed_stories_by_user.items(), key=lambda x: x[1][0]):
     summary += f"• *{user}*: {', '.join([f'<https://{JIRA_DOMAIN}/browse/{key}|{key}>' for key in issues])}\n"
 
@@ -123,5 +123,5 @@ for user, issues in sorted(crct_stories_by_user.items(), key=lambda x: x[1][0]):
 
 print(summary)
 print(summary2)
-post_to_slack(summary)
-post_to_slack(summary2)
+#post_to_slack(summary)
+#post_to_slack(summary2)
