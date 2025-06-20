@@ -90,7 +90,7 @@ for board_id in BOARD_IDS:
             if issuetype == "Story":
                 status_lower = status.lower()
                 
-                if status_lower in ["dev-complete", "test-pending", "test-blocked", "done", "deployed"]:
+                if status_lower in ["dev-complete", "test-pending", "test-blocked", "done", "deployed", "test-complete"]:
                     if assignee_name not in completed_stories_by_user:
                         completed_stories_by_user[assignee_name] = []
                     completed_stories_by_user[assignee_name].append(issue["key"])
