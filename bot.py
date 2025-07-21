@@ -33,12 +33,6 @@ def post_to_slack(message):
     except SlackApiError as e:
         print(f"❌ Slack error: {e.response['error']}")
 
-# Skip if not a demo week
-week_number = datetime.date.today().isocalendar().week
-if (week_number+1) % 2 != 0:
-    msg = f"🛑 Week {week_number} is not a demo week — skipping Jira summary."
-    print(msg)
-    sys.exit(0)
 
 completed_stories_by_user = {}
 crct_stories_by_user = {}
